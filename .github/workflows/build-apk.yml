@@ -50,20 +50,24 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug \
             --no-daemon \
-            --stacktrace \
             -Pandroid.injected.build.abi=arm64-v8a,armeabi-v7a
         env:
-          GRADLE_OPTS: "-Xmx4g -XX:MaxMetaspaceSize=512m -Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.caching=true"
+          GRADLE_OPTS: "-Xmx4g -XX:MaxMetaspaceSize=512m -Dorg.gradle.daemon=false -Dorg.gradle.parallel=true"
 
-      - name: List APK files
+      - name: Find and list APK files
         run: |
-          echo "=== APK files ==="
-          find android/app/build/outputs/apk -name "*.apk" -exec ls -lh {} \;
+          echo "=== Searching for APK files ==="
+          find . -name "*.apk" 2>/dev/null || true
+          echo "=== APK build output dir ==="
+          ls -la android/app/build/outputs/ 2>/dev/null || echo "No outputs dir found"
+          ls -la android/app/build/outputs/apk/ 2>/dev/null || echo "No apk dir"
+          ls -la android/app/build/outputs/apk/debug/ 2>/dev/null || echo "No debug dir"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: VibePlayRiko-Debug-APK
-          path: android/app/build/outputs/apk/debug/*.apk
+          path: |
+            android/app/build/outputs/apk/**/*.apk
           if-no-files-found: error
           retention-days: 30
