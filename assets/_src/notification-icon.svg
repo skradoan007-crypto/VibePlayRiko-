@@ -1,0 +1,6 @@
+<svg width="96" height="96" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <!-- Android status-bar icons must be pure white on transparent -->
+  <g transform="translate(512 512) scale(0.7) translate(-486 -512)" fill="#FFFFFF">
+    <path d="M636 300 V604 a96 96 0 1 1 -68 -90 V404 l-176 49 V716 a96 96 0 1 1 -68 -90 V372 a44 44 0 0 1 33 -43 l232 -64 a44 44 0 0 1 55 43 z"/>
+  </g>
+</svg>

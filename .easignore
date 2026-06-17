@@ -1,0 +1,6 @@
+# Files not needed on the EAS build worker
+assets/_src/
+scripts/
+README.md
+*.md
+.env.example

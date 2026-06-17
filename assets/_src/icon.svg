@@ -1,0 +1,23 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#EAF4FF"/>
+      <stop offset="0.55" stop-color="#BBDEFB"/>
+      <stop offset="1" stop-color="#90CAF9"/>
+    </linearGradient>
+    <linearGradient id="note" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#448AFF"/>
+      <stop offset="1" stop-color="#1565C0"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="16" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="1024" height="1024" rx="232" fill="url(#bg)"/>
+  <rect x="168" y="168" width="688" height="688" rx="176" fill="#FFFFFF" opacity="0.30"/>
+  <rect x="168" y="168" width="688" height="688" rx="176" fill="none" stroke="#FFFFFF" stroke-opacity="0.75" stroke-width="4"/>
+  <g filter="url(#glow)" fill="url(#note)">
+    <path d="M636 300 V604 a96 96 0 1 1 -68 -90 V404 l-176 49 V716 a96 96 0 1 1 -68 -90 V372 a44 44 0 0 1 33 -43 l232 -64 a44 44 0 0 1 55 43 z"/>
+  </g>
+</svg>

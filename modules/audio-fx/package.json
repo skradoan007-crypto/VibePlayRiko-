@@ -1,0 +1,7 @@
+{
+  "name": "audio-fx",
+  "version": "0.1.0",
+  "description": "Native Android audio effects for VibePlay (equalizer, bass boost, reverb).",
+  "main": "index.ts",
+  "private": true
+}
