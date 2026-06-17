@@ -1,0 +1,67 @@
+name: Build Android APK (32+64 bit)
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Prebuild Android native project
+        run: npx expo prebuild --platform android --clean --no-install
+
+      - name: Enable fat APK (armeabi-v7a + arm64-v8a + x86 + x86_64)
+        run: |
+          GRADLE_FILE="android/app/build.gradle"
+          # Remove any existing abiFilters / splits blocks injected by prebuild
+          # Then inject splits config for fat universal APK
+          cat >> "$GRADLE_FILE" << 'GRADLE_PATCH'
+
+          // --- Fat APK: include all ABIs in one file ---
+          android.defaultConfig.ndk {
+              abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+          }
+          GRADLE_PATCH
+
+      - name: Build Universal Release APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon -PenableMinifyInReleaseBuilds=false
+        env:
+          GRADLE_OPTS: "-Xmx4g -XX:MaxMetaspaceSize=512m"
+
+      - name: List built APKs
+        run: find android/app/build/outputs/apk -name "*.apk" | sort
+
+      - name: Upload Universal APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: VibePlayRiko-universal-APK
+          path: android/app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
+          retention-days: 30
