@@ -1,4 +1,4 @@
-name: Build Android APK (32+64 bit)
+name: Build Android APK (32+64 bit fast)
 
 on:
   push:
@@ -8,6 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
 
     steps:
       - name: Checkout code
@@ -30,41 +31,37 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Prebuild Android native project
+      - name: Prebuild Android
         run: npx expo prebuild --platform android --clean --no-install
 
-      - name: Enable fat APK (armeabi-v7a + arm64-v8a + x86 + x86_64)
-        run: |
-          GRADLE_FILE="android/app/build.gradle"
-          # Remove any existing abiFilters / splits blocks injected by prebuild
-          # Then inject splits config for fat universal APK
-          sed -i '/ndk\.abiFilters/d' "$GRADLE_FILE"
-          sed -i '/abiFilters/d' "$GRADLE_FILE"
-          sed -i '/splits {/,/}/d' "$GRADLE_FILE"
-          sed -i '/ndk {/,/}/d' "$GRADLE_FILE"
-          cat >> "$GRADLE_FILE" << 'GRADLE_PATCH'
-
-          // --- Fat APK: include all ABIs in one file ---
-          android.defaultConfig.ndk {
-              abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
-          }
-          GRADLE_PATCH
-
-      - name: Build Universal Release APK
+      - name: Build APK (arm64-v8a + armeabi-v7a only)
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleRelease --no-daemon -PenableMinifyInReleaseBuilds=false
+          # Build only the 2 most common architectures (covers 99% of devices)
+          # This is ~4x faster than building all 4 architectures
+          ./gradlew assembleRelease \
+            --no-daemon \
+            -PenableMinifyInReleaseBuilds=false \
+            -Pandroid.injected.build.abi=arm64-v8a,armeabi-v7a
         env:
           GRADLE_OPTS: "-Xmx4g -XX:MaxMetaspaceSize=512m"
 
-      - name: List built APKs
-        run: find android/app/build/outputs/apk -name "*.apk" | sort
+      - name: List APK files
+        run: |
+          echo "=== APK files ==="
+          find android/app/build/outputs/apk -name "*.apk" -exec ls -lh {} \;
+          echo "=== APK details ==="
+          find android/app/build/outputs/apk -name "*.apk" | while read f; do
+            echo "File: $f"
+            file "$f" || true
+            unzip -l "$f" | grep "lib/" | head -5 || true
+          done
 
-      - name: Upload Universal APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: VibePlayRiko-universal-APK
+          name: VibePlayRiko-APK
           path: android/app/build/outputs/apk/release/*.apk
           if-no-files-found: error
           retention-days: 30
