@@ -17,7 +17,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
 
       - name: Setup JDK 17
         uses: actions/setup-java@v4
@@ -39,6 +38,10 @@ jobs:
           GRADLE_FILE="android/app/build.gradle"
           # Remove any existing abiFilters / splits blocks injected by prebuild
           # Then inject splits config for fat universal APK
+          sed -i '/ndk\.abiFilters/d' "$GRADLE_FILE"
+          sed -i '/abiFilters/d' "$GRADLE_FILE"
+          sed -i '/splits {/,/}/d' "$GRADLE_FILE"
+          sed -i '/ndk {/,/}/d' "$GRADLE_FILE"
           cat >> "$GRADLE_FILE" << 'GRADLE_PATCH'
 
           // --- Fat APK: include all ABIs in one file ---
